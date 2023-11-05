@@ -1,6 +1,17 @@
 ## Hi there 👋
 
-### CLI ![workflow](https://github.com/codefly-dev/cli/actions/workflows/go.yml/badge.svg)
+### Core
+
+![workflow](https://github.com/codefly-dev/core/actions/workflows/go.yml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/codefly-dev/core)](https://goreportcard.com/report/github.com/codefly-dev/core)
+[![Go Reference](https://pkg.go.dev/badge/github.com/codefly-dev/core.svg)](https://pkg.go.dev/github.com/codefly-dev/sdk-go)
+![coverage](https://raw.githubusercontent.com/codefly-dev/core/badges/.badges/main/coverage.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
+### CLI
+
+![workflow](https://github.com/codefly-dev/cli/actions/workflows/go.yml/badge.svg)
 
 <!--
 
