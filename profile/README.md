@@ -1,5 +1,7 @@
 ## Hi there 👋
 
+### CLI ![workflow](https://github.com/codefly-dev/cli/actions/workflows/go.yml/badge.svg)
+
 <!--
 
 **Here are some ideas to get you started:**
