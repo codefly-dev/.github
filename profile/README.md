@@ -1,6 +1,6 @@
 ## Hi there 👋
 
-### [core]((https://github.com/codefly-dev/core)
+### [core](https://github.com/codefly-dev/core)
 
 ![workflow](https://github.com/codefly-dev/core/actions/workflows/go.yml/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/codefly-dev/core)](https://goreportcard.com/report/github.com/codefly-dev/core)
