@@ -1,4 +1,8 @@
-## Hi there 👋
+# Welcome to codefly.ai
+
+![repo](https://github.com/codefly-dev/.github/assets/31669419/85739f6d-d440-42ff-81b8-9c2601125b2c)
+
+
 
 ### [core](https://github.com/codefly-dev/core)
 
