@@ -1,0 +1,12 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: service
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/codefly-dev/example.git
+    targetRevision: main
+    path: templates/base
+  destination:
+    server: https://kubernetes.default.svc

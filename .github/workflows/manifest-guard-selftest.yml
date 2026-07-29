@@ -1,0 +1,21 @@
+# Verifies the ownership scanner itself: a clean manifest-only tree passes, a
+# synthetic runtime Git/Argo dependency fails, and excluded release automation
+# and test fixtures are never scanned.
+name: manifest-guard-selftest
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'actions/manifest-ownership-scan/**'
+      - '.github/workflows/manifest-guard-selftest.yml'
+  pull_request:
+    paths:
+      - 'actions/manifest-ownership-scan/**'
+      - '.github/workflows/manifest-guard-selftest.yml'
+jobs:
+  scan-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run scanner behavioral tests
+        run: bash actions/manifest-ownership-scan/scan_test.sh
