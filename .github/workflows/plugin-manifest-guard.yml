@@ -1,0 +1,119 @@
+# Reusable enforcement for manifest-only Codefly plugins.
+#
+# A Codefly Kubernetes-output plugin must be a deterministic manifest producer:
+# it must not own Git, GitHub, pull requests, Argo CD / Flux, or repository /
+# revision binding. This workflow runs the Core manifest-bundle conformance
+# suite against the plugin's own persisted renders, and scans runtime source and
+# generated output for those forbidden ownership concepts.
+#
+# Adopt it from a plugin repo (see docs/manifest-guard.md):
+#
+#   jobs:
+#     manifest-guard:
+#       uses: codefly-dev/.github/.github/workflows/plugin-manifest-guard.yml@main
+#
+# Plugins that do not emit Kubernetes manifests opt out with
+# `with: { kubernetes-output: false }`; the check then reports the capability as
+# unsupported and passes.
+name: plugin-manifest-guard
+on:
+  workflow_call:
+    inputs:
+      kubernetes-output:
+        description: >-
+          Whether this plugin emits Kubernetes manifests. Set false to opt out;
+          the guard then reports manifest output as unsupported and passes.
+        type: boolean
+        required: false
+        default: true
+      go-version-file:
+        description: File the Go version is read from for the conformance suite.
+        type: string
+        required: false
+        default: go.mod
+      exclude-paths:
+        description: >-
+          Newline-separated glob patterns excluded from the ownership scan, in
+          addition to the built-in release-automation and fixture exclusions.
+          Other paths are rejected.
+        type: string
+        required: false
+        default: ""
+    secrets:
+      go-token:
+        description: >-
+          Optional token for fetching private Go modules (e.g. codefly-dev/core)
+          during the conformance suite.
+        required: false
+permissions:
+  contents: read
+# A single job keeps the required check name identical for every plugin,
+# whether or not it emits Kubernetes manifests. Non-Kubernetes plugins run only
+# the opt-out report; Kubernetes plugins run the conformance suite and scan.
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    env:
+      GO_TOKEN: ${{ secrets.go-token }}
+    steps:
+      - name: Report Kubernetes manifest output as unsupported
+        if: ${{ !inputs.kubernetes-output }}
+        run: |
+          message="manifest-guard: Kubernetes manifest output UNSUPPORTED — plugin opted out (kubernetes-output=false)."
+          echo "$message"
+          echo "$message" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check out plugin
+        if: ${{ inputs.kubernetes-output }}
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: plugin
+
+      - name: Check out manifest guard
+        if: ${{ inputs.kubernetes-output }}
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: manifest-guard
+          persist-credentials: false
+
+      - name: Set up Go
+        if: ${{ inputs.kubernetes-output }}
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: plugin/${{ inputs.go-version-file }}
+
+      - name: Configure private module access
+        if: ${{ inputs.kubernetes-output && env.GO_TOKEN != '' }}
+        run: |
+          git config --global \
+            url."https://x-access-token:${GO_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+          echo "GOPRIVATE=github.com/codefly-dev/*" >> "$GITHUB_ENV"
+
+      - name: Verify plugin manifest bundles
+        if: ${{ inputs.kubernetes-output }}
+        uses: ./manifest-guard/actions/manifest-conformance
+        with:
+          working-directory: plugin
+          output-root: ${{ runner.temp }}/codefly-manifest-output
+
+      - name: Scan runtime source for ownership concepts
+        if: ${{ inputs.kubernetes-output }}
+        uses: ./manifest-guard/actions/manifest-ownership-scan
+        with:
+          scan-root: plugin
+          exclude-paths: ${{ inputs.exclude-paths }}
+
+      - name: Scan first generated manifest tree for ownership concepts
+        if: ${{ inputs.kubernetes-output }}
+        uses: ./manifest-guard/actions/manifest-ownership-scan
+        with:
+          scan-root: ${{ runner.temp }}/codefly-manifest-output/run-1
+
+      - name: Scan second generated manifest tree for ownership concepts
+        if: ${{ inputs.kubernetes-output }}
+        uses: ./manifest-guard/actions/manifest-ownership-scan
+        with:
+          scan-root: ${{ runner.temp }}/codefly-manifest-output/run-2

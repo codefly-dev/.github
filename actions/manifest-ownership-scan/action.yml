@@ -1,0 +1,36 @@
+name: Manifest ownership scan
+description: >-
+  Fail if a Codefly plugin's runtime source or generated output references
+  Git/GitHub/Argo/Flux/pull-request/repository ownership concepts. Exclusions
+  are path-based only.
+inputs:
+  scan-root:
+    description: Directory to scan.
+    required: false
+    default: .
+  exclude-paths:
+    description: >-
+      Newline-separated glob patterns to exclude in addition to the built-in
+      release-automation and fixture exclusions. Other paths are rejected.
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Scan for forbidden ownership concepts
+      shell: bash
+      env:
+        SCAN_ROOT: ${{ inputs.scan-root }}
+        EXTRA_EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+      run: |
+        status=0
+        "${GITHUB_ACTION_PATH}/scan.sh" > "${RUNNER_TEMP}/ownership-scan.log" 2>&1 || status=$?
+        cat "${RUNNER_TEMP}/ownership-scan.log"
+        {
+          echo "### Manifest ownership scan"
+          echo ""
+          echo '```'
+          cat "${RUNNER_TEMP}/ownership-scan.log"
+          echo '```'
+        } >> "${GITHUB_STEP_SUMMARY}"
+        exit "$status"

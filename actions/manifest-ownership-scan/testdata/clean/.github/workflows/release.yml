@@ -1,0 +1,16 @@
+# Release automation legitimately drives Git. It lives under .github/ and is
+# excluded from the ownership scan by path — this file must NOT trip the scan.
+name: release
+on:
+  push:
+    tags: [ 'v*' ]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag and push
+        run: |
+          git config user.name ci
+          git remote set-url origin git@github.com:codefly-dev/example.git
+          git push origin HEAD

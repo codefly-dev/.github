@@ -1,0 +1,11 @@
+name: manifest-guard
+on:
+  pull_request:
+  push:
+    branches: [ $default-branch ]
+jobs:
+  manifest-guard:
+    # Runs the Core manifest-bundle conformance suite and scans runtime and
+    # generated output for Git/Argo/repository ownership concepts.
+    # Non-Kubernetes plugins add: with: { kubernetes-output: false }
+    uses: codefly-dev/.github/.github/workflows/plugin-manifest-guard.yml@main

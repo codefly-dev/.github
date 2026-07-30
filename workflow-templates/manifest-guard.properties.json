@@ -1,0 +1,7 @@
+{
+  "name": "Codefly manifest-only plugin guard",
+  "description": "Run the Core manifest-bundle conformance suite and forbid Git/Argo/repository ownership concepts in Kubernetes-output plugins.",
+  "iconName": "shield",
+  "categories": ["Continuous integration"],
+  "filePatterns": ["go.mod$", "agent.codefly.yaml$"]
+}
