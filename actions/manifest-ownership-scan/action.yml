@@ -11,8 +11,7 @@ inputs:
   exclude-paths:
     description: >-
       Newline-separated glob patterns to exclude in addition to the built-in
-      defaults (.git, .github/, *_test.go, testdata/). Use for repository
-      release automation and test fixtures only.
+      release-automation and fixture exclusions. Other paths are rejected.
     required: false
     default: ""
 runs:

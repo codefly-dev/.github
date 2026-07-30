@@ -3,9 +3,8 @@
 # A Codefly Kubernetes-output plugin must be a deterministic manifest producer:
 # it must not own Git, GitHub, pull requests, Argo CD / Flux, or repository /
 # revision binding. This workflow runs the Core manifest-bundle conformance
-# suite and scans runtime source and generated output for those forbidden
-# ownership concepts, so a single identical required check can be adopted across
-# every official plugin repository.
+# suite, verifies that the plugin actually executed the shared helper, and scans
+# runtime source and generated output for those forbidden ownership concepts.
 #
 # Adopt it from a plugin repo (see docs/manifest-guard.md):
 #
@@ -32,26 +31,11 @@ on:
         type: string
         required: false
         default: go.mod
-      conformance-command:
-        description: >-
-          Command that runs the Core manifest-bundle conformance suite. The
-          default runs the plugin's deployment/manifest contract tests, which
-          verify deterministic output, canonical inventory, exact digest, and
-          secret-free restricted mode via the Core helpers.
-        type: string
-        required: false
-        default: go test ./...
-      scan-root:
-        description: Directory scanned for forbidden ownership concepts.
-        type: string
-        required: false
-        default: .
       exclude-paths:
         description: >-
           Newline-separated glob patterns excluded from the ownership scan, in
-          addition to the built-in defaults (.git, .github/, *_test.go,
-          testdata/). For repository release automation and test fixtures only —
-          runtime exceptions are not supported.
+          addition to the built-in release-automation and fixture exclusions.
+          Other paths are rejected.
         type: string
         required: false
         default: ""
@@ -61,6 +45,8 @@ on:
           Optional token for fetching private Go modules (e.g. codefly-dev/core)
           during the conformance suite.
         required: false
+permissions:
+  contents: read
 # A single job keeps the required check name identical for every plugin,
 # whether or not it emits Kubernetes manifests. Non-Kubernetes plugins run only
 # the opt-out report; Kubernetes plugins run the conformance suite and scan.
@@ -97,11 +83,10 @@ jobs:
 
       - name: Run Core manifest-bundle conformance suite
         if: ${{ inputs.kubernetes-output }}
-        run: ${{ inputs.conformance-command }}
+        uses: codefly-dev/.github/actions/manifest-conformance@main
 
       - name: Scan runtime and generated output for ownership concepts
         if: ${{ inputs.kubernetes-output }}
         uses: codefly-dev/.github/actions/manifest-ownership-scan@main
         with:
-          scan-root: ${{ inputs.scan-root }}
           exclude-paths: ${{ inputs.exclude-paths }}

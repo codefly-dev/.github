@@ -9,19 +9,23 @@ plugins.
 
 The guard does two things:
 
-1. **Runs the Core manifest-bundle conformance suite.** The default command,
-   `go test ./...`, exercises each plugin's deployment/manifest contract test
-   (`agenttesting.AssertKustomizeTemplates`), which verifies deterministic
-   output, canonical inventory, exact content digests, and secret-free
-   restricted mode through Core.
+1. **Runs and verifies the Core manifest-bundle conformance suite.** It runs
+   `go test ./...` and requires pass evidence from
+   `agenttesting.AssertKustomizeTemplates`; a plugin with no manifest
+   conformance test fails. It also runs Core's bundle tests from the version in
+   the plugin's `go.mod`, covering deterministic output, canonical inventory,
+   exact content digests, the transport-neutral contract, and secret-free
+   restricted mode. Plugins must use Core `v0.2.59` or newer.
 2. **Scans runtime source and generated plugin-owned output** for forbidden
-   ownership concepts: Argo/Flux API groups, `kind: Application` /
-   `kind: AppProject`, `repoURL`, `targetRevision`, `go-git`, GitHub clients,
-   pull-request operations, `exec.Command("git", …)`, and Git SSH remotes.
+   ownership concepts: Git operations and remotes, repository URL/branch/
+   revision bindings, pull requests, GitHub clients, Argo/Flux clients and API
+   groups, `Application`, `AppProject`, `repoURL`, and `targetRevision`.
 
-Exclusions are **path-based only**. Repository release automation (`.github/`)
-and test fixtures (`*_test.go`, `testdata/`) are excluded by default; there are
-no in-code runtime exceptions.
+Exclusions are **path-based only**. Repository automation (`.github/`,
+`.coderabbit.yaml`, and conventional publish/release script directories) and
+test fixtures (`*_test.*`, `testdata/`, `fixtures/`, and conventional test
+paths) are excluded by default. Additional exclusions are accepted only for
+those same automation and fixture path shapes; runtime paths are rejected.
 
 ## Adopt it (Kubernetes-output plugin)
 
@@ -73,9 +77,7 @@ branch-protection rule applies to every plugin repository.
 | --- | --- | --- |
 | `kubernetes-output` | `true` | Set `false` to opt out; reports manifest output as unsupported and passes. |
 | `go-version-file` | `go.mod` | File the Go version is read from. |
-| `conformance-command` | `go test ./...` | Command that runs the Core manifest-bundle conformance suite. |
-| `scan-root` | `.` | Directory scanned for ownership concepts. |
-| `exclude-paths` | `""` | Newline-separated glob patterns excluded in addition to the defaults. Release automation and test fixtures only. |
+| `exclude-paths` | `""` | Newline-separated release-automation or test-fixture paths excluded in addition to the defaults. Other path shapes fail the check. |
 
 Secret `go-token` (optional) configures private Go module access for the
 conformance suite.

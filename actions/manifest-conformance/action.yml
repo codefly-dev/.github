@@ -1,0 +1,31 @@
+name: Manifest bundle conformance
+description: Run and verify the Codefly Core manifest-bundle conformance suite.
+runs:
+  using: composite
+  steps:
+    - name: Run plugin manifest conformance
+      shell: bash
+      run: |
+        set -euo pipefail
+        plugin_log="${RUNNER_TEMP}/codefly-plugin-conformance.json"
+        go test -json ./... |
+          tee "$plugin_log" |
+          jq -jr 'select(.Action == "output") | .Output'
+
+    - name: Run Core manifest-bundle contract tests
+      shell: bash
+      run: |
+        set -euo pipefail
+        core_log="${RUNNER_TEMP}/codefly-core-conformance.json"
+        go test -json github.com/codefly-dev/core/agents/services \
+          -run '^(TestDeployKustomizeEmitsDeterministicManifestBundle|TestDeployKustomizeRendersRestrictedSecretFreeTreeWithoutClusterAccess|TestDeployKustomizeRejectsSecretBytesForRestricted|TestKubernetesPluginContractHasNoDeliverySystemTerms|TestRestrictedProfileHasNoDeliverySystemDependencies)$' \
+          -count=1 |
+          tee "$core_log" |
+          jq -jr 'select(.Action == "output") | .Output'
+
+    - name: Verify conformance evidence
+      shell: bash
+      run: >-
+        "${GITHUB_ACTION_PATH}/verify.sh"
+        "${RUNNER_TEMP}/codefly-plugin-conformance.json"
+        "${RUNNER_TEMP}/codefly-core-conformance.json"

@@ -26,14 +26,18 @@ if out="$(SCAN_ROOT="$here/testdata/dirty" bash "$scan" 2>&1)"; then
 else
   pass "dirty tree fails"
   for label in \
-    "Git library (go-git)" \
+    "Git library" \
     "GitHub API client" \
     "Git process execution" \
     "Pull request operation" \
     "Argo/Flux API group" \
-    "Argo Application kind" \
+    "Argo/Flux client" \
+    "Argo Application" \
+    "Argo AppProject" \
     "Repository URL binding" \
-    "Target revision binding"; do
+    "Repository branch binding" \
+    "Repository revision binding" \
+    "Git command"; do
     if grep -qF "[$label]" <<<"$out"; then
       pass "dirty tree reports: $label"
     else
@@ -52,11 +56,20 @@ else
   pass "excluded release automation and test fixtures are not scanned"
 fi
 
-# Caller-supplied EXTRA_EXCLUDE_PATHS suppress an otherwise-failing path.
-if out="$(SCAN_ROOT="$here/testdata/dirty" EXTRA_EXCLUDE_PATHS=$'pkg/*\ntemplates/*' bash "$scan" 2>&1)"; then
-  pass "EXTRA_EXCLUDE_PATHS suppresses matched paths"
+# Fixture exclusions leave runtime violations visible.
+if out="$(SCAN_ROOT="$here/testdata/dirty" EXTRA_EXCLUDE_PATHS=$'pkg/runtime/fixture_test.go\ntemplates/fixtures/*' bash "$scan" 2>&1)"; then
+  fail "fixture exclusions must not hide runtime violations:"$'\n'"$out"
 else
-  fail "EXTRA_EXCLUDE_PATHS should have suppressed all violations:"$'\n'"$out"
+  pass "fixture exclusions leave runtime violations visible"
+fi
+
+# Runtime and generated-output exclusions are invalid.
+if out="$(SCAN_ROOT="$here/testdata/dirty" EXTRA_EXCLUDE_PATHS=$'pkg/*\ntemplates/*' bash "$scan" 2>&1)"; then
+  fail "runtime exclusions should be rejected but passed:"$'\n'"$out"
+elif grep -qF "only release automation and test-fixture paths may be excluded" <<<"$out"; then
+  pass "runtime exclusions are rejected"
+else
+  fail "runtime exclusion failed without the expected diagnostic:"$'\n'"$out"
 fi
 
 echo ""

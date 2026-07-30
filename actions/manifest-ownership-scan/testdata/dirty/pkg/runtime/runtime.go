@@ -4,15 +4,22 @@ import (
 	"context"
 	"os/exec"
 
+	argoclient "github.com/argoproj/argo-cd/v3/pkg/apiclient"
+	fluxclient "github.com/fluxcd/pkg/runtime/client"
 	"github.com/go-git/go-git/v5"
 	"github.com/google/go-github/v60/github"
 )
 
-// Render smuggles delivery responsibilities into plugin runtime code: it clones
-// a repository, shells out to git, and opens a pull request. Every one of these
-// is a forbidden ownership concept for a manifest-only plugin.
-func Render(ctx context.Context, repoURL, targetRevision string) error {
-	if _, err := git.PlainClone("/tmp/repo", false, &git.CloneOptions{URL: repoURL}); err != nil {
+type Application struct{}
+type AppProject struct{}
+
+func Render(ctx context.Context, repositoryURL, repositoryBranch, targetRevision string) error {
+	_ = argoclient.ClientOptions{}
+	_ = fluxclient.Options{}
+	_ = Application{}
+	_ = AppProject{}
+	_ = repositoryBranch
+	if _, err := git.PlainClone("/tmp/repo", false, &git.CloneOptions{URL: repositoryURL}); err != nil {
 		return err
 	}
 	if err := exec.Command("git", "checkout", targetRevision).Run(); err != nil {
