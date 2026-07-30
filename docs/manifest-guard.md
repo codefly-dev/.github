@@ -10,11 +10,10 @@ plugins.
 The guard does two things:
 
 1. **Runs and verifies the Core manifest-bundle conformance suite.** It runs
-   `go test ./...` and requires pass evidence from
-   `agenttesting.AssertKustomizeTemplates`; a plugin with no manifest
-   conformance test fails. It also runs Core's bundle tests from the version in
-   the plugin's `go.mod`, covering deterministic output, canonical inventory,
-   exact content digests, the transport-neutral contract, and secret-free
+   `go test ./...`, invokes the plugin's explicit manifest render twice, and
+   validates both persisted trees with Core from the plugin's `go.mod`. The
+   check compares the plugin's canonical file inventories and exact content
+   digests, validates the transport-neutral contract, and requires secret-free
    restricted mode. Plugins must use Core `v0.2.59` or newer.
 2. **Scans runtime source and generated plugin-owned output** for forbidden
    ownership concepts: Git operations and remotes, repository URL/branch/
@@ -45,6 +44,16 @@ jobs:
 Then mark **`manifest-guard / guard`** as a required status check on the
 default branch. Every official Kubernetes-output plugin uses this identical
 snippet.
+
+The plugin must own exactly one Go test named `TestManifestGuardRender`. It
+must render through the plugin's production manifest path into
+`CODEFLY_MANIFEST_DESTINATION`, using the supplied
+`CODEFLY_MANIFEST_ENVIRONMENT`, `CODEFLY_MANIFEST_NAMESPACE`, and
+`CODEFLY_MANIFEST_PROFILE`. When `CODEFLY_MANIFEST_DESTINATION` is unset, the
+test should skip so ordinary `go test ./...` runs remain usable. The guard sets
+the profile to
+`KUBERNETES_OUTPUT_PROFILE_RESTRICTED_PORTABLE_V1` and invokes the test twice;
+the two output trees must be byte-for-byte deterministic.
 
 If the conformance suite pulls private modules (e.g. `codefly-dev/core`), pass a
 token:

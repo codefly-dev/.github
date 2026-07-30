@@ -6,11 +6,13 @@ on:
     paths:
       - 'actions/manifest-conformance/**'
       - 'actions/manifest-ownership-scan/**'
+      - '.github/workflows/plugin-manifest-guard.yml'
       - '.github/workflows/manifest-guard-selftest.yml'
   pull_request:
     paths:
       - 'actions/manifest-conformance/**'
       - 'actions/manifest-ownership-scan/**'
+      - '.github/workflows/plugin-manifest-guard.yml'
       - '.github/workflows/manifest-guard-selftest.yml'
 permissions:
   contents: read
@@ -18,8 +20,15 @@ jobs:
   scan-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: actions/manifest-conformance/testdata/plugin/go.mod
       - name: Run scanner behavioral tests
         run: bash actions/manifest-ownership-scan/scan_test.sh
       - name: Run conformance evidence tests
         run: bash actions/manifest-conformance/verify_test.sh
+      - name: Run manifest conformance behavioral tests
+        run: bash actions/manifest-conformance/run_test.sh
+      - name: Verify reusable workflow contract
+        run: bash actions/manifest-conformance/workflow_test.sh

@@ -1,0 +1,5 @@
+paths:
+  .github/workflows/plugin-manifest-guard.yml:
+    # GitHub added reusable-workflow identity fields before actionlint's schema.
+    ignore:
+      - 'property "workflow_(repository|sha)" is not defined in object type'

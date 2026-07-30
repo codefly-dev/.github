@@ -46,6 +46,25 @@ else
   done
 fi
 
+# Canonical Go identifiers must be detected without relying on a YAML copy of
+# the same concept elsewhere in the tree.
+if out="$(SCAN_ROOT="$here/testdata/runtime-identifiers" bash "$scan" 2>&1)"; then
+  fail "runtime ownership identifiers should fail but passed"
+else
+  for expectation in \
+    "[Argo Application] runtime.go:3:" \
+    "[Argo AppProject] runtime.go:4:" \
+    "[Repository URL binding] runtime.go:7:" \
+    "[Repository branch binding] runtime.go:8:" \
+    "[Repository revision binding] runtime.go:9:"; do
+    if grep -qF "$expectation" <<<"$out"; then
+      pass "runtime identifier reports: ${expectation%%] *}]"
+    else
+      fail "runtime identifier scan missed: $expectation"$'\n'"$out"
+    fi
+  done
+fi
+
 # Excluded paths must not be the reason a dirty tree fails: prove the release
 # workflow's git@github.com and the fixture's argoproj.io are never reported
 # for the clean tree.

@@ -49,17 +49,17 @@ Tests/*
 __tests__/*
 */__tests__/*'
 
-# Forbidden concepts as "label::regex" pairs. Patterns are case-sensitive so
-# ordinary prose and source-code module hosts do not look like runtime
-# ownership.
+# Forbidden concepts as "label::regex" pairs. Matching is case-insensitive;
+# token boundaries keep ordinary identifiers such as ApplicationController
+# from looking like ownership.
 PATTERNS=(
   'Argo/Flux API group::argoproj\.io|fluxcd\.io'
   'Argo/Flux client::github\.com/argoproj/argo-cd|github\.com/fluxcd/|argocd[-_/]?client|flux[-_/]?client'
-  "Argo Application::kind[\"']?[[:space:]]*:[[:space:]]*[\"']?Application([\"']|[^[:alnum:]_]|$)"
-  "Argo AppProject::kind[\"']?[[:space:]]*:[[:space:]]*[\"']?AppProject([\"']|[^[:alnum:]_]|$)"
-  'Repository URL binding::repoURL|repositoryURL|repository_url|repository-url'
-  'Repository branch binding::repoBranch|repositoryBranch|repository_branch|repository-branch|gitBranch|git_branch|git-branch|refs/heads/'
-  'Repository revision binding::targetRevision|repoRevision|repositoryRevision|repository_revision|repository-revision|gitRevision|git_revision|git-revision'
+  "Argo Application::kind[\"']?[[:space:]]*:[[:space:]]*[\"']?Application([\"']|[^[:alnum:]_]|$)|(type|class|struct|interface)[[:space:]]+Application([^[:alnum:]_]|$)"
+  "Argo AppProject::kind[\"']?[[:space:]]*:[[:space:]]*[\"']?AppProject([\"']|[^[:alnum:]_]|$)|(type|class|struct|interface)[[:space:]]+AppProject([^[:alnum:]_]|$)"
+  'Repository URL binding::(^|[^[:alnum:]_])(repoURL|repositoryURL|repository_url|repository-url)([^[:alnum:]_]|$)'
+  'Repository branch binding::(^|[^[:alnum:]_])(repoBranch|repositoryBranch|repository_branch|repository-branch|gitBranch|git_branch|git-branch|Branch)([^[:alnum:]_]|$)|refs/heads/'
+  'Repository revision binding::(^|[^[:alnum:]_])(targetRevision|repoRevision|repositoryRevision|repository_revision|repository-revision|gitRevision|git_revision|git-revision|Revision)([^[:alnum:]_]|$)'
   'Git library::github\.com/(go-git/go-git|libgit2/git2go|src-d/go-git)/|org\.eclipse\.jgit|git2::Repository|simple-git|isomorphic-git|nodegit|GitPython|dulwich'
   'GitHub API client::github\.com/google/go-github/|github\.com/shurcooL/githubv4|github\.NewClient|@octokit/|PyGithub|githubkit|octocrab'
   'Pull request operation::PullRequest|pull_request|pull-request|pulls\.(Create|Edit|List|Merge)'
@@ -138,7 +138,7 @@ for pair in "${PATTERNS[@]}"; do
   regex="${pair#*::}"
   [ "${#files[@]}" -eq 0 ] && break
   # grep across the file list; -I skips binaries, -H/-n give file:line context.
-  if hits="$(grep -EnIH "$regex" -- "${files[@]}")"; then
+  if hits="$(grep -EnIHi "$regex" -- "${files[@]}")"; then
     while IFS= read -r line; do
       [ -z "$line" ] && continue
       echo "FORBIDDEN [$label] $line"
