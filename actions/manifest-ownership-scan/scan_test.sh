@@ -65,6 +65,16 @@ else
   done
 fi
 
+# Reading a released RPC request field named Revision is not ownership: the
+# plugin declares neither the type nor a repository binding. The declaration
+# form stays a violation, as the runtime-identifiers fixture above asserts.
+if out="bash: : No such file or directory"; then
+  pass "reading a released contract revision field is not ownership"
+else
+  fail "contract field read should pass but failed:"$'
+'""
+fi
+
 # Excluded paths must not be the reason a dirty tree fails: prove the release
 # workflow's git@github.com and the fixture's argoproj.io are never reported
 # for the clean tree.

@@ -59,7 +59,7 @@ PATTERNS=(
   "Argo AppProject::kind[\"']?[[:space:]]*:[[:space:]]*[\"']?AppProject([\"']|[^[:alnum:]_]|$)|(type|class|struct|interface)[[:space:]]+AppProject([^[:alnum:]_]|$)"
   'Repository URL binding::(^|[^[:alnum:]_])(repoURL|repositoryURL|repository_url|repository-url)([^[:alnum:]_]|$)'
   'Repository branch binding::(^|[^[:alnum:]_])(repoBranch|repositoryBranch|repository_branch|repository-branch|gitBranch|git_branch|git-branch|Branch)([^[:alnum:]_]|$)|refs/heads/'
-  'Repository revision binding::(^|[^[:alnum:]_])(targetRevision|repoRevision|repositoryRevision|repository_revision|repository-revision|gitRevision|git_revision|git-revision|Revision)([^[:alnum:]_]|$)'
+  'Repository revision binding::(^|[^[:alnum:]_])(targetRevision|repoRevision|repositoryRevision|repository_revision|repository-revision|gitRevision|git_revision|git-revision)([^[:alnum:]_]|$)|(^|[^[:alnum:]_.])Revision([^[:alnum:]_]|$)'
   'Git library::github\.com/(go-git/go-git|libgit2/git2go|src-d/go-git)/|org\.eclipse\.jgit|git2::Repository|simple-git|isomorphic-git|nodegit|GitPython|dulwich'
   'GitHub API client::github\.com/google/go-github/|github\.com/shurcooL/githubv4|github\.NewClient|@octokit/|PyGithub|githubkit|octocrab'
   'Pull request operation::PullRequest|pull_request|pull-request|pulls\.(Create|Edit|List|Merge)'
