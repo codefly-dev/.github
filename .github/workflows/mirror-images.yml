@@ -1,0 +1,59 @@
+# Imports the upstream images the fleet builds on, tests with, and runs as
+# companions into ghcr.io/codefly-dev/mirror, by digest — the ONLY place the
+# fleet ever reads Docker Hub (obin-ai/infra-base docs/container-registry.md: every reference in
+# a Dockerfile, builder template, CI workflow or companion pin names ghcr.io,
+# never docker.io). `skopeo copy --all` copies the manifest index unchanged,
+# so a consumer that pins `ghcr.io/codefly-dev/mirror/<name>@sha256:<digest>`
+# pins exactly the upstream bytes, and the step below refuses an import whose
+# index digest differs from the source's.
+name: Mirror images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - supply-chain/mirror-images.json
+      - .github/workflows/mirror-images.yml
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Log in to ghcr.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | skopeo login ghcr.io -u "${{ github.actor }}" --password-stdin
+      # Docker Hub is read anonymously and never logged in to from GitHub
+      # (owner, 2026-10-09): no Docker Hub credential exists in CI. When the
+      # shared runner IP's pull limit refuses a read, the retries below and the
+      # daily schedule cover it, or the import is run from a developer machine
+      # with write:packages (`skopeo copy --all` with the same list).
+      - name: Import every listed image by digest
+        run: |
+          set -euo pipefail
+          mirror=$(jq -er .mirror supply-chain/mirror-images.json)
+          failed=0
+          jq -r '.images[] | "\(.source) \(.name)"' supply-chain/mirror-images.json | while read -r source name; do
+            src_digest=$(skopeo inspect --raw "docker://$source" | sha256sum | cut -d' ' -f1)
+            dst="docker://$mirror/$name"
+            if dst_digest=$(skopeo inspect --raw "$dst" 2>/dev/null | sha256sum | cut -d' ' -f1) && [ "$dst_digest" = "$src_digest" ]; then
+              echo "current  $mirror/$name@sha256:$src_digest"; continue
+            fi
+            skopeo copy --all --retry-times 5 "docker://$source" "$dst"
+            dst_digest=$(skopeo inspect --raw "$dst" | sha256sum | cut -d' ' -f1)
+            if [ "$dst_digest" != "$src_digest" ]; then echo "::error::$name: imported index $dst_digest is not the source's $src_digest"; failed=1; continue; fi
+            echo "imported $mirror/$name@sha256:$src_digest"
+          done
+          exit $failed
+      # A package first pushed by a workflow of this PUBLIC repository is public
+      # and linked here; that is why the importer lives in codefly-dev/.github
+      # and not in a private repo or on a developer machine (a PAT-created
+      # package is private and no API changes that).
