@@ -1,0 +1,26 @@
+{
+  "schema": "obin-supply-chain/mirror-images/v1",
+  "mirror": "ghcr.io/codefly-dev/mirror",
+  "images": [
+    {"source": "docker.io/library/golang:1.27.2-alpine3.23", "name": "golang:1.27.2-alpine3.23"},
+    {"source": "docker.io/library/golang:1.27-alpine", "name": "golang:1.27-alpine"},
+    {"source": "docker.io/library/golang:1.27-bookworm", "name": "golang:1.27-bookworm"},
+    {"source": "docker.io/library/golang:1.26.9-alpine3.24", "name": "golang:1.26.9-alpine3.24"},
+    {"source": "docker.io/library/alpine:3.24.1", "name": "alpine:3.24.1"},
+    {"source": "docker.io/library/alpine:3.24", "name": "alpine:3.24"},
+    {"source": "docker.io/library/alpine:3.23.5", "name": "alpine:3.23.5"},
+    {"source": "docker.io/library/alpine:3.19", "name": "alpine:3.19"},
+    {"source": "docker.io/library/debian:trixie-slim", "name": "debian:trixie-slim"},
+    {"source": "docker.io/library/node:20-alpine3.22", "name": "node:20-alpine3.22"},
+    {"source": "docker.io/library/node:22-alpine", "name": "node:22-alpine"},
+    {"source": "docker.io/library/postgres:16", "name": "postgres:16"},
+    {"source": "docker.io/library/postgres:16-alpine", "name": "postgres:16-alpine"},
+    {"source": "docker.io/library/redis:8.8.0-alpine", "name": "redis:8.8.0-alpine"},
+    {"source": "docker.io/library/nginx:1.31.6-alpine", "name": "nginx:1.31.6-alpine"},
+    {"source": "docker.io/library/registry:2", "name": "registry:2"},
+    {"source": "docker.io/goreleaser/goreleaser-cross:v1.27.1-1", "name": "goreleaser-cross:v1.27.1-1"},
+    {"source": "docker.io/goreleaser/goreleaser-cross:v1.27.0", "name": "goreleaser-cross:v1.27.0"},
+    {"source": "docker.io/minio/minio:RELEASE.2025-09-07T16-13-09Z", "name": "minio:RELEASE.2025-09-07T16-13-09Z"},
+    {"source": "docker.io/fsouza/fake-gcs-server:1.52.2", "name": "fake-gcs-server:1.52.2"}
+  ]
+}
