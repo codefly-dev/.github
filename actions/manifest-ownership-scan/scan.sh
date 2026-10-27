@@ -58,8 +58,18 @@ PATTERNS=(
   "Argo Application::kind[\"']?[[:space:]]*:[[:space:]]*[\"']?Application([\"']|[^[:alnum:]_]|$)|(type|class|struct|interface)[[:space:]]+Application([^[:alnum:]_]|$)"
   "Argo AppProject::kind[\"']?[[:space:]]*:[[:space:]]*[\"']?AppProject([\"']|[^[:alnum:]_]|$)|(type|class|struct|interface)[[:space:]]+AppProject([^[:alnum:]_]|$)"
   'Repository URL binding::(^|[^[:alnum:]_])(repoURL|repositoryURL|repository_url|repository-url)([^[:alnum:]_]|$)'
-  'Repository branch binding::(^|[^[:alnum:]_])(repoBranch|repositoryBranch|repository_branch|repository-branch|gitBranch|git_branch|git-branch|Branch)([^[:alnum:]_]|$)|refs/heads/'
-  'Repository revision binding::(^|[^[:alnum:]_])(targetRevision|repoRevision|repositoryRevision|repository_revision|repository-revision|gitRevision|git_revision|git-revision)([^[:alnum:]_]|$)|(^|[^[:alnum:]_.])Revision([^[:alnum:]_]|$)'
+  # A bare token is ownership where the syntax BINDS it: a manifest key or list
+  # entry, an assignment (`cfg.Branch = ...`), a field declaration, a struct tag,
+  # a struct-literal field, a setter call. Matching the word anywhere made an
+  # English comment read as repository binding — a finding about a word rather
+  # than about ownership — while matching only a line-start identifier would let
+  # `cfg.Branch = branchFromManifest()` sail through the guard that exists to
+  # catch it. A plain READ (`req.Revision == ""`) stays allowed: reading a
+  # released contract field owns neither the type nor a binding. The explicit
+  # spellings and refs/heads/ stay matched wherever they appear.
+  "Repository branch binding::(^|[^[:alnum:]_])(repoBranch|repositoryBranch|repository_branch|repository-branch|gitBranch|git_branch|git-branch)([^[:alnum:]_]|$)|refs/heads/|^[[:space:]]*(-[[:space:]]*)?[\"']?branch[\"']?[[:space:]]*(:|=[^=])|^[[:space:]]*branch[[:space:]]+[^[:space:]]|[\"']branch[\"'][[:space:]]*:|:[\"']branch[\"']|[.>]branch[[:space:]]*=[^=]|[{,][[:space:]]*branch[[:space:]]*:|(set|with)_?branch[[:space:]]*\\("
+  # Same rule as Branch above, including the allowed selector read.
+  "Repository revision binding::(^|[^[:alnum:]_])(targetRevision|repoRevision|repositoryRevision|repository_revision|repository-revision|gitRevision|git_revision|git-revision)([^[:alnum:]_]|$)|^[[:space:]]*(-[[:space:]]*)?[\"']?revision[\"']?[[:space:]]*(:|=[^=])|^[[:space:]]*revision[[:space:]]+[^[:space:]]|[\"']revision[\"'][[:space:]]*:|:[\"']revision[\"']|[.>]revision[[:space:]]*=[^=]|[{,][[:space:]]*revision[[:space:]]*:|(set|with)_?revision[[:space:]]*\\("
   'Git library::github\.com/(go-git/go-git|libgit2/git2go|src-d/go-git)/|org\.eclipse\.jgit|git2::Repository|simple-git|isomorphic-git|nodegit|GitPython|dulwich'
   'GitHub API client::github\.com/google/go-github/|github\.com/shurcooL/githubv4|github\.NewClient|@octokit/|PyGithub|githubkit|octocrab'
   'Pull request operation::PullRequest|pull_request|pull-request|pulls\.(Create|Edit|List|Merge)'
