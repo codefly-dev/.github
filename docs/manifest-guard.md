@@ -19,6 +19,9 @@ The guard does two things:
    ownership concepts: Git operations and remotes, repository URL/branch/
    revision bindings, pull requests, GitHub clients, Argo/Flux clients and API
    groups, `Application`, `AppProject`, `repoURL`, and `targetRevision`.
+   Branch/revision binding includes Go `var`/`const` declarations and inline
+   struct fields; plain released-contract field reads and comment prose remain
+   allowed.
 
 Exclusions are **path-based only**. Repository automation (`.github/`,
 `.coderabbit.yaml`, and conventional publish/release script directories) and
