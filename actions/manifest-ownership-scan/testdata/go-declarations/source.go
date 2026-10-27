@@ -11,3 +11,4 @@ func constants() {
 	_, _ = Branch, Revision
 }
 type Inline struct { Branch string; Revision string }
+func inline() { var Branch = "main"; var Revision = "HEAD"; _, _ = Branch, Revision }

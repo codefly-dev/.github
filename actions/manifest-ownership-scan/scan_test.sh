@@ -145,7 +145,9 @@ else
     "[Repository branch binding] source.go:9:" \
     "[Repository revision binding] source.go:10:" \
     "[Repository branch binding] source.go:13:" \
-    "[Repository revision binding] source.go:13:"; do
+    "[Repository revision binding] source.go:13:" \
+    "[Repository branch binding] source.go:14:" \
+    "[Repository revision binding] source.go:14:"; do
     if grep -qF "$expectation" <<<"$out"; then
       pass "Go declaration reported: $expectation"
     else

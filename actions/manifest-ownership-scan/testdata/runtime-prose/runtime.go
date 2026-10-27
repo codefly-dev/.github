@@ -13,3 +13,8 @@ func installsLinkedPackages(container bool) bool {
 	}
 	return true
 }
+
+// Select a path; branch selection depends on the input.
+// Update the plan; revision history remains available.
+// Explain the choice { branch selection depends on the input.
+// Explain the choice { revision history remains available.
