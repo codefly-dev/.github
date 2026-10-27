@@ -134,6 +134,26 @@ else
   done
 fi
 
+# Go declarations are bindings even with var/const prefixes or inline fields.
+# Prose and contract reads above must remain clean under the same matcher.
+if out="$(SCAN_ROOT="$here/testdata/go-declarations" bash "$scan" 2>&1)"; then
+  fail "Go binding declarations should fail but passed"
+else
+  for expectation in \
+    "[Repository branch binding] source.go:4:" \
+    "[Repository revision binding] source.go:5:" \
+    "[Repository branch binding] source.go:9:" \
+    "[Repository revision binding] source.go:10:" \
+    "[Repository branch binding] source.go:13:" \
+    "[Repository revision binding] source.go:13:"; do
+    if grep -qF "$expectation" <<<"$out"; then
+      pass "Go declaration reported: $expectation"
+    else
+      fail "Go declaration missed: $expectation"$'\n'"$out"
+    fi
+  done
+fi
+
 # Excluded paths must not be the reason a dirty tree fails: prove the release
 # workflow's git@github.com and the fixture's argoproj.io are never reported
 # for the clean tree.
