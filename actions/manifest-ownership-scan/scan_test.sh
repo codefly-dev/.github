@@ -68,11 +68,40 @@ fi
 # Reading a released RPC request field named Revision is not ownership: the
 # plugin declares neither the type nor a repository binding. The declaration
 # form stays a violation, as the runtime-identifiers fixture above asserts.
-if out="bash: : No such file or directory"; then
+if out="$(SCAN_ROOT="$here/testdata/contract-field" bash "$scan" 2>&1)"; then
   pass "reading a released contract revision field is not ownership"
 else
-  fail "contract field read should pass but failed:"$'
-'""
+  fail "contract field read should pass but failed:"$'\n'"$out"
+fi
+
+# Prose is not ownership. The English words "branch" and "revision" in a
+# comment that explains control flow name no repository, and a gate that
+# reports one answers about a word rather than about ownership. Every
+# declaration form still fails, below.
+if out="$(SCAN_ROOT="$here/testdata/runtime-prose" bash "$scan" 2>&1)"; then
+  pass "a comment explaining control flow is not branch or revision binding"
+else
+  fail "prose comment should pass but failed:"$'\n'"$out"
+fi
+
+# A manifest key, a list entry, a field, a struct tag and an assignment are all
+# declarations of a branch or revision binding and stay violations.
+if out="$(SCAN_ROOT="$here/testdata/token-declaration-forms" bash "$scan" 2>&1)"; then
+  fail "token declaration forms should fail but passed:"$'\n'"$out"
+else
+  for expectation in \
+    "[Repository branch binding] runtime.go:4:" \
+    "[Repository branch binding] runtime.go:9:" \
+    "[Repository branch binding] source.yaml:3:" \
+    "[Repository branch binding] source.yaml:6:" \
+    "[Repository revision binding] runtime.go:5:" \
+    "[Repository revision binding] source.yaml:4:"; do
+    if grep -qF "$expectation" <<<"$out"; then
+      pass "token declaration reported: $expectation"
+    else
+      fail "token declaration scan missed: $expectation"$'\n'"$out"
+    fi
+  done
 fi
 
 # Excluded paths must not be the reason a dirty tree fails: prove the release

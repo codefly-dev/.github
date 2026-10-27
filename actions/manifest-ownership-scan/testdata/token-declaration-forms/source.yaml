@@ -1,0 +1,6 @@
+spec:
+  source:
+    branch: main
+    revision: HEAD
+    tags:
+      - branch: release
