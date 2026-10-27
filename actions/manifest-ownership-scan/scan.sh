@@ -118,7 +118,9 @@ EOF
 
 is_scannable() {
   case "$1" in
-    *.md.tmpl)
+    # Like plain go.sum (not a source extension below), a generated checksum
+    # lock records dependency bytes, not runtime imports or ownership.
+    go.sum.tmpl | */go.sum.tmpl | *.md.tmpl)
       return 1
       ;;
     *.go | *.rs | *.py | *.rb | *.java | *.kt | *.kts | *.swift | *.c | *.cc | *.cpp | *.h | *.hpp | \

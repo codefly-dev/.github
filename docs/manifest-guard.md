@@ -25,6 +25,10 @@ Exclusions are **path-based only**. Repository automation (`.github/`,
 test fixtures (`*_test.*`, `testdata/`, `fixtures/`, and conventional test
 paths) are excluded by default. Additional exclusions are accepted only for
 those same automation and fixture path shapes; runtime paths are rejected.
+Go checksum locks (`go.sum` and `go.sum.tmpl`) are metadata, not source: transitive
+or test dependency checksums do not establish runtime ownership. Generated Go
+source and dependency declarations remain scanned; a forbidden import in
+`main.go.tmpl` or a dependency in `go.mod.tmpl` still fails.
 
 ## Adopt it (Kubernetes-output plugin)
 

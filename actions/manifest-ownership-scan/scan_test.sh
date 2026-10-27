@@ -46,6 +46,26 @@ else
   done
 fi
 
+# Checksums can describe transitive test dependencies, without importing them
+# in the generated runtime. The generated source and module declarations still
+# carry ownership evidence and must remain visible beside those checksums.
+if out="$(SCAN_ROOT="$here/testdata/checksum-metadata" bash "$scan" 2>&1)"; then
+  pass "generated Go dependency checksums are metadata"
+else
+  fail "checksum metadata should pass but failed:"$'\n'"$out"
+fi
+if out="$(SCAN_ROOT="$here/testdata/generated-client" bash "$scan" 2>&1)"; then
+  fail "generated GitHub client source and declaration should fail"
+else
+  for file in main.go.tmpl go.mod.tmpl; do
+    if grep -qF "[GitHub API client] templates/factory/code/$file:" <<<"$out"; then
+      pass "generated client remains detected in $file"
+    else
+      fail "generated client missed in $file:"$'\n'"$out"
+    fi
+  done
+fi
+
 # Canonical Go identifiers must be detected without relying on a YAML copy of
 # the same concept elsewhere in the tree.
 if out="$(SCAN_ROOT="$here/testdata/runtime-identifiers" bash "$scan" 2>&1)"; then
